@@ -1,0 +1,53 @@
+body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #C0A44E;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .course {
+      margin-bottom: 15px;
+    }
+
+    input, select {
+      padding: 5px;
+      margin-right: 10px;
+      background-color: #DDBD57;
+      border-radius: 15px;
+      height: 30px;
+      font-size: 15px;
+      
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    
+    .delete-btn {
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+  #GPA {
+    margin-left: 80%;
+    color: #664647;
+    font-size: 30px;
+  }
