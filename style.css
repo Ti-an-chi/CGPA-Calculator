@@ -1,9 +1,13 @@
 body {
       font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #C0A44E;
+      padding: 25.0px;
+      background-color: #564D82;
     }
-
+    .cont {
+      background-color: #1A664F;
+      border-radius: 15px;
+      padding: 12px;
+    }
     h1 {
       text-align: center;
     }
@@ -38,16 +42,24 @@ body {
     }
     
     .delete-btn {
-  background-color: red;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  padding: 5px 10px;
-  cursor: pointer;
-}
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 7px;
+    display: block;
+    padding: 8px 16px;
+    cursor: pointer;
+    }
+    
+    .delete-btn img {
+      height: 25px;
+      width: auto;
+      display: inline-block;
+      margin-bottom: -6px;
+    }
 
-  #GPA {
-    margin-left: 80%;
-    color: #664647;
-    font-size: 30px;
-  }
+      #GPA {
+      margin-left: 80%;
+      color: #664647;
+      font-size: 30px;
+      }

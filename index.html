@@ -13,28 +13,28 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <h1>CGPA Calculator</h1>
-  <b><div id="GPA"></div></b>
-  <div id="courses">
-    <div class="course">
-      <input type="text" placeholder="Course name" />
-      <input type="number" placeholder="Unit" class="credit" />
-      <select class="grade">
-        <option value="5">A</option>
-        <option value="4">B</option>
-        <option value="3">C</option>
-        <option value="2">D</option>
-        <option value="1">E</option>
-        <option value="0">F</option>
-      </select>
-    </div>
-  </div>
-
+  <div class="cont">
+    <h1>CGPA Calculator</h1>
+    <b><div id="GPA"></div></b>
+    <div id="courses">
+      <div class="course">
+        <input type="text" placeholder="Course name"/>
+        <input type="number" placeholder="Unit" class="credit"/>
+        <select class="grade">
+          <option value="5">A</option>
+          <option value="4">B</option>
+          <option value="3">C</option>
+          <option value="2">D</option>
+          <option value="1">E</option>
+          <option value="0">F</option>
+        </select>
+      </div>
+   </div>
+   
       <button onclick="addCourse()"><i>+ Add Course</i></button>
-  <button onclick="calculateCGPA()" style="margin-left: 10%;"><b>Calculate CGPA</b></button>
-    <button onclick="deleteLastCourse()" class="delete-btn">Delete Course</button>
-
+   <button onclick="calculateCGPA()" style="margin-left: 10%;"><b>Calculate CGPA</b></button>
+    <button onclick="deleteLastCourse()" class="delete-btn"> <img src="/white-bin.png"></img> Delete Course</button>
+  </div>
   <div id="result"></div>
 
   <script src="main.js"></script>

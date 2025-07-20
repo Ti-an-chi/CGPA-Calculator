@@ -1,4 +1,3 @@
-console.log('Hello World!');
 function addCourse() {
       const courseDiv = document.createElement('div');
       courseDiv.className = 'course';
@@ -16,7 +15,7 @@ function addCourse() {
       `;
       document.getElementById('courses').appendChild(courseDiv);
     }
-
+    
     function calculateCGPA() {
       const credits = document.querySelectorAll('.credit');
       const grades = document.querySelectorAll('.grade');
