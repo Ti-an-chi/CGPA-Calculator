@@ -45,5 +45,5 @@ function addCourse() {
     courses[courses.length - 1].remove();
   } else {
     alert("You must have at least one course.");
-  }
-}
+  };
+};
