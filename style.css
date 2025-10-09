@@ -8,10 +8,16 @@ body {
       border-radius: 15px;
       padding: 12px;
     }
-    h1 {
+    .top {
       text-align: center;
+      gap: 4;
     }
-
+    
+#courses {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem; /* optional spacing */
+}
     .course {
       margin-bottom: 15px;
     }
