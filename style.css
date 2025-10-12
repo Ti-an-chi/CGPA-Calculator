@@ -1,7 +1,7 @@
   :root {
     /* Light Theme */
     --bg: #f4f6f5;
-    --container: #dfe8e0;
+    --container: #D4DED5;
     --accent: #0077cc;
     --text: #1e1e1e;
     --input-bg: #c9d9c8;
@@ -19,7 +19,7 @@
     --input-bg: #283932;
     --highlight: #e6c667;
     --shadow: rgba(0, 0, 0, 0.5);
-    --border: rgba(255, 255, 255, 0.1);
+    --border: #295F37;
   }
 
     * {
@@ -42,6 +42,8 @@
       box-shadow: 0 4px 10px var(--shadow);
       max-width: 700px;
       margin: auto;
+      max-height: 80vh;
+      overflow: auto;
     }
 
     h1 {
@@ -60,11 +62,13 @@
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 1rem;
     }
-
+    
     input, select {
       padding: 7px;
       margin-right: 8px;
       border: none;
+      color: var(--text);
+      border: solid 2px var(--border);
       border-radius: 15px;
       background-color: var(--input-bg);
       font-size: 15px;
@@ -80,11 +84,7 @@
       border-radius: 12px;
       font-size: 16px;
       cursor: pointer;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
+    }button:hover {opacity: 0.9;}
 
     #GPA {
       text-align: right;
@@ -145,4 +145,3 @@
       body { padding: 10px; }
       .theme-toggle { width: 35px; height: 35px; font-size: 18px; }
     }
-  
