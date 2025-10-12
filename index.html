@@ -12,34 +12,29 @@
   <title>GradeBoard</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <div class="cont">
-    <div class="top">
-      <h1>Calculate Your CGPA</h1>
-      <small>best of luck🍀</small>
+<body data-theme="dark">
+  <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+
+  <div class="container">
+    <h1>GradeBoard</h1>
+    <small>fast • offline • familiar 🍀</small>
+
+    <div id="GPA"></div>
+    <div id="courses"></div>
+
+    <div style="text-align:center;">
+      <button onclick="addCourse()">+ Add Course</button>
+      <button onclick="calculateCGPA()">Calculate CGPA</button>
+      <button onclick="deleteLastCourse()" class="delete-btn">🗑️ Delete</button>
     </div>
-   
-    <b><div id="GPA"></div></b>
-    <div id="courses">
-      <div class="course">
-        <input type="text" placeholder="Course name"/>
-        <input type="number" placeholder="Unit" class="credit"/>
-        <select class="grade">
-          <option value="5">A</option>
-          <option value="4">B</option>
-          <option value="3">C</option>
-          <option value="2">D</option>
-          <option value="1">E</option>
-          <option value="0">F</option>
-        </select>
-      </div>
-   </div>
-   
-      <button onclick="addCourse()"><i>+ Add Course</i></button>
-   <button onclick="calculateCGPA()" style="margin-left: 10%;"><b>Calculate CGPA</b></button>
-    <button onclick="deleteLastCourse()" class="delete-btn"> <img src="/white-bin.png"></img> Delete Course</button>
+
+    <div id="result"></div>
   </div>
-  <div id="result"></div>
+
+  <div class="signup-banner">
+    🚀 <span>New!</span> Save semesters & track your progress.<br>
+    <button onclick="redirectToSignup()">Sign up for a better experience</button>
+  </div>
 
   <script src="main.js"></script>
 
