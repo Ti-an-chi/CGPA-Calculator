@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sign in or create your GradeBoard account to save your semesters, track progress, and unlock your personalized CGPA dashboard.">
+  <meta name="author" content="Imtiaz" />
+  <title>GradeBoard — Sign In / Sign Up</title>
+
+  <style>
+    :root {
+      --bg: #f4f6f5;
+      --card: #dce3e0;
+      --text: #1e1e1e;
+      --accent: #0077cc;
+      --shadow: rgba(0, 0, 0, 0.1);
+      --border: #cbd2cf;
+      --error: #d33;
+      --success: #2d995b;
+    }
+
+    [data-theme="dark"] {
+      --bg: #101418;
+      --card: #1b2b25;
+      --text: #e5e5e5;
+      --accent: #4ea8de;
+      --shadow: rgba(0, 0, 0, 0.5);
+      --border: #2e473b;
+      --error: #ff5757;
+      --success: #58d68d;
+    }
+
+    * {
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 15px;
+    }
+
+    .auth-card {
+      background-color: var(--card);
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px var(--shadow);
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 6px;
+      font-size: 24px;
+    }
+
+    p.sub {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 7px 0;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background-color: rgba(255,255,255,0.1);
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 5px var(--accent);
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 10px;
+      background-color: var(--accent);
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { opacity: 0.9; }
+
+    .switch {
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    .switch a {
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .remember {
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+      justify-content: start;
+      margin-top: 6px;
+    }
+
+    .remember input {
+      width: auto;
+      margin-right: 6px;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      border: none;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 3px 6px var(--shadow);
+    }
+
+    .message {
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .message.error { color: var(--error); }
+    .message.success { color: var(--success); }
+
+    .guest-link {
+      display: block;
+      margin-top: 18px;
+      font-size: 14px;
+      color: var(--accent);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+
+  <div class="auth-card" id="authCard">
+    <h2 id="formTitle">Sign In</h2>
+    <p class="sub" id="formDesc">Welcome back! Enter your details to continue.</p>
+
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <input type="password" id="confirmPassword" placeholder="Confirm password" style="display:none;" />
+
+    <div class="remember">
+      <input type="checkbox" id="remember" /> <label for="remember">Remember me</label>
+    </div>
+
+    <button onclick="handleAuth()" id="authBtn">Sign In</button>
+
+    <div class="switch">
+      <span id="toggleText">Don’t have an account? </span>
+      <a onclick="toggleMode()" id="toggleLink">Sign Up</a>
+    </div>
+
+    <div class="message" id="msg"></div>
+
+    <a href="index.html" class="guest-link">Continue as guest</a>
+  </div>
+
+  <script type="module">
+import { API } from './api.js';
+    const body = document.body;
+const msg = document.getElementById("msg");
+let mode = "signin"; // or signup
+
+// Theme toggler
+function toggleTheme() {
+  const current = body.getAttribute("data-theme");
+  body.setAttribute("data-theme", current === "dark" ? "light" : "dark");
+  localStorage.setItem("theme", body.getAttribute("data-theme"));
+}
+
+// Load theme
+(function () {
+  const saved = localStorage.getItem("theme");
+  if (saved) body.setAttribute("data-theme", saved);
+})();
+
+// Toggle Sign In / Up
+function toggleMode() {
+  const title = document.getElementById("formTitle");
+  const desc = document.getElementById("formDesc");
+  const confirmInput = document.getElementById("confirmPassword");
+  const toggleText = document.getElementById("toggleText");
+  const toggleLink = document.getElementById("toggleLink");
+  const authBtn = document.getElementById("authBtn");
+
+  msg.innerText = "";
+
+  if (mode === "signin") {
+    mode = "signup";
+    title.innerText = "Create Account";
+    desc.innerText = "Sign up to save your progress and unlock your dashboard.";
+    confirmInput.style.display = "block";
+    toggleText.innerText = "Already have an account? ";
+    toggleLink.innerText = "Sign In";
+    authBtn.innerText = "Sign Up";
+  } else {
+    mode = "signin";
+    title.innerText = "Sign In";
+    desc.innerText = "Welcome back! Enter your details to continue.";
+    confirmInput.style.display = "none";
+    toggleText.innerText = "Don’t have an account? ";
+    toggleLink.innerText = "Sign Up";
+    authBtn.innerText = "Sign In";
+  }
+}
+
+// Handle Authentication
+async function handleAuth() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const confirm = document.getElementById("confirmPassword").value;
+  const remember = document.getElementById("remember").checked;
+
+  if (!username || !password) {
+    showMessage("All fields are required.", "error");
+    return;
+  }
+
+  if (mode === 'signup') {
+    if (password !== confirm) { showMessage("Passwords don’t match.", "error"); return; }
+    try {
+      await API.register(username, password);
+      showMessage("Account created! Redirecting…", "success");
+      setTimeout(() => toggleMode(), 1200);
+    } catch (e) {
+      showMessage(e.message, "error");
+    }
+    return;
+  }
+
+  /* ----------  SIGN-IN FLOW  ---------- */
+  try {
+    const data = await API.login(username, password);
+    localStorage.setItem('gradeboard_token', data.token);
+    if (data.refresh) localStorage.setItem('gradeboard_refresh', data.refresh);
+
+    if (remember) {
+      localStorage.setItem("gradeboard_logged", JSON.stringify({ username, password }));
+    }
+    showMessage("Sign in successful! Redirecting...", "success");
+     setTimeout(() => window.location.href = "dashboard.html", 1000);
+  } catch (e) {
+    showMessage(e.message, "error");
+  }
+}
+
+function showMessage(text, type) {
+  msg.className = `message ${type}`;
+  msg.innerText = text;
+}
+
+  // Auto-fill if remembered
+window.onload = function () {
+  const remembered = JSON.parse(localStorage.getItem("gradeboard_logged") || "null");
+  if (remembered) {
+    document.getElementById("username").value = remembered.username;
+    document.getElementById("password").value = remembered.password;
+    document.getElementById("remember").checked = true;
+  }
+};
+// expose to global scope so inline onclick can see them
+window.toggleTheme = toggleTheme;
+window.toggleMode  = toggleMode;
+window.handleAuth  = handleAuth;
+  </script>
+</body>
+</html>

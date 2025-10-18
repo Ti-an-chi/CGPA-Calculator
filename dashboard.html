@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GradeBoard</title>
+    <style>
+        :root {
+    --bg: #f4f6f5;
+    --container: #44A74E;
+    --accent: #0077cc;
+    --text: #1e1e1e;
+    --input-bg: #c9d9c8;
+    --highlight: #e0b84d;
+    --shadow: rgba(0, 0, 0, 0.08);
+    --border: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] {
+    --bg: #121218;
+    --container: #1b2b25;
+    --accent: #4ea8de;
+    --text: #f2f2f2;
+    --input-bg: #283932;
+    --highlight: #e6c667;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --border: #295F37;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding-bottom: 70px;
+}
+
+.main-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.dashboard-header {
+    background: var(--container);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px var(--shadow);
+    border: 1px solid var(--border);
+}
+
+.totals-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+}
+
+.total-item {
+    text-align: center;
+    padding: 16px;
+    background: var(--input-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.total-label {
+    display: block;
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin-bottom: 8px;
+}
+
+.total-value {
+    display: block;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-header h2 {
+    color: var(--text);
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.semester-card, .projection-card {
+    background: var(--container);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px var(--shadow);
+    border: 1px solid var(--border);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.card-title {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.card-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 8px;
+    background: var(--input-bg);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+
+.stat-label {
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+.stat-value {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.strength-meter {
+    text-align: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+.strength-weak { background: #ff6b6b; color: white; }
+.strength-average { background: #ffd166; color: black; }
+.strength-strong { background: #06d6a0; color: white; }
+.strength-beast { background: #118ab2; color: white; }
+
+.btn-primary, .btn-secondary {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--input-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn-primary:hover, .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.playmode-area {
+    background: var(--container);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+    box-shadow: 0 4px 12px var(--shadow);
+    border: 1px solid var(--border);
+}
+
+.playmode-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.playmode-result {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--container);
+    display: flex;
+    justify-content: space-around;
+    padding: 12px;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 12px var(--shadow);
+}
+
+.nav-btn, .theme-toggle {
+    padding: 12px 24px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.nav-btn.active {
+    background: var(--accent);
+    color: white;
+}
+
+.theme-toggle {
+    font-size: 1.2em;
+    padding: 8px 16px;
+}
+
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-content {
+    background: var(--container);
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px var(--shadow);
+    border: 1px solid var(--border);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.calculator-popup {
+    max-width: 600px;
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: var(--text);
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+}
+
+.form-buttons, .popup-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.form-buttons button, .popup-buttons button {
+    flex: 1;
+}
+
+.course-list {
+    margin-bottom: 20px;
+}
+
+.course-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+
+.course-row input, .course-row select {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+}
+
+.remove-course {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.calc-result {
+    text-align: center;
+    padding: 16px;
+    background: var(--input-bg);
+    border-radius: 8px;
+    margin-top: 16px;
+    border: 1px solid var(--border);
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .main-grid {
+        padding: 16px;
+    }
+    
+    .totals-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .cards-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    
+    .course-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    
+    .course-row input, .course-row select {
+        width: 100%;
+    }
+    
+    .form-buttons, .popup-buttons {
+        flex-direction: column;
+    }
+    
+    .bottom-nav {
+        padding: 8px;
+    }
+    
+    .nav-btn, .theme-toggle {
+        padding: 10px 16px;
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .popup-content {
+        padding: 16px;
+        margin: 16px;
+    }
+    
+    .course-row {
+        grid-template-columns: 1fr;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="main-grid">
+        <header class="dashboard-header">
+            <div class="totals-container">
+                <div class="total-item">
+                    <span class="total-label">Total Score</span>
+                    <span id="totalScore" class="total-value">0</span>
+                </div>
+                <div class="total-item">
+                    <span class="total-label">Total Units</span>
+                    <span id="totalUnits" class="total-value">0</span>
+                </div>
+                <div class="total-item">
+                    <span class="total-label">CGPA</span>
+                    <span id="cgpaDisplay" class="total-value">0.00</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard-main">
+            <section class="semesters-section">
+                <div class="section-header">
+                    <h2>Semesters</h2>
+                    <button id="addSemester" class="btn-primary">Add Semester</button>
+                </div>
+                <div id="semester-list" class="cards-container"></div>
+            </section>
+
+            <section class="projection-section">
+                <div class="section-header">
+                    <h2>Projection</h2>
+                    <button id="addProjection" class="btn-primary">Add Projection</button>
+                </div>
+                <div id="projection-list" class="cards-container"></div>
+            </section>
+        </main>
+
+        <div id="playmode-area" class="playmode-area hidden">
+            <div class="playmode-header">
+                <h2>Calculator Playmode</h2>
+                <div class="playmode-result">
+                    <span>CGPA: </span>
+                    <span id="playmodeResult">0.00</span>
+                </div>
+            </div>
+            <div class="calculator-content">
+                <div id="playmodeCourseList" class="course-list"></div>
+                <button id="playmodeAddCourse" class="btn-secondary">Add Course</button>
+                <button id="playmodeCalculate" class="btn-primary">Calculate CGPA</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+        <button class="nav-btn" data-view="playmode">Calculator</button>
+        <button id="themeToggle" class="theme-toggle">🌙</button>
+    </nav>
+
+    <div id="semesterFormPopup" class="popup-overlay hidden">
+        <div class="popup-content">
+            <h3>Add New Semester</h3>
+            <div class="form-group">
+                <label for="partSelect">Part:</label>
+                <select id="partSelect">
+                    <option value="Part 1">Part 1</option>
+                    <option value="Part 2">Part 2</option>
+                    <option value="Part 3">Part 3</option>
+                    <option value="Part 4">Part 4</option>
+                    <option value="Part 5">Part 5</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="semesterSelect">Semester:</label>
+                <select id="semesterSelect">
+                    <option value="RAIN">RAIN</option>
+                    <option value="HAMATERN">HAMATERN</option>
+                </select>
+            </div>
+            <div class="form-buttons">
+                <button id="confirmSemester" class="btn-primary">Add Semester</button>
+                <button id="cancelSemester" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="calcPopup" class="popup-overlay hidden">
+        <div class="popup-content calculator-popup">
+            <div class="popup-header">
+                <h3 id="calcHeader">Semester Calculator</h3>
+                <button id="closeCalc" class="close-btn">&times;</button>
+            </div>
+            <div id="courseList" class="course-list"></div>
+            <div class="popup-buttons">
+                <button id="addCourseBtn" class="btn-secondary">Add Course</button>
+                <button id="calcGpaBtn" class="btn-primary">Calculate GPA</button>
+            </div>
+            <div id="calcResult" class="calc-result"></div>
+        </div>
+    </div>
+
+    <script type="module" src="dashboard.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
