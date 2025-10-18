@@ -1,4 +1,4 @@
-/*========= API GATEWAY – swap baseURL when your server is live =========*/
+/*========= API GATEWAY – api.js =========*/
 const API = {
   baseURL: 'https://gradeboard-api-production.up.railway.app/api',
 
@@ -25,8 +25,6 @@ async _fetch(path, options = {}) {
     } catch {}
     throw new Error(msg);
   }
-
-  // ✅ Return JSON result
   return await resp.json();
 },
 
@@ -48,17 +46,17 @@ register(username, password) {
 
   /*---------- semesters ----------*/
   getSemesters() {
-    return this._fetch('/semesters');      // GET  -> [{id, title, part, semester, courses[]}, ...]
+    return this._fetch('/semesters');
   },
 
-  updateSemester(id, payload) {            // payload = { courses, totalUnits, totalPoints, gpa }
-    return this._fetch(`/semesters/${id}`, {
+  updateSemester(id, payload) {
+    return API._fetch(`/semesters/${id}`, {
       method: 'PUT',
       body: JSON.stringify(payload)
     });
   },
   
-  createSemester(payload) {   // payload = {title, part, semester, courses[], totalUnits, totalPoints, gpa}
+  createSemester(payload) {
   return this._fetch('/semesters', {
     method: 'POST',
     body: JSON.stringify(payload)
@@ -68,7 +66,5 @@ register(username, password) {
 deleteSemester(id) {
   return this._fetch(`/semesters/${id}`, { method: 'DELETE' });
 }
-
 };
-
-export { API };
+window.API = API;

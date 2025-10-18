@@ -6,13 +6,11 @@ let projectionSemesters = [];
 let currentSemesterInPopup = null;
 let isProjectionPopup = false;
 
-import { API } from './api.js';
-
 /*========SERVER → CLIENT BRIDGE========*/
 window.importSemestersFromServer = function (serverList) {
   // convert server shape into app.js shape
   realSemesters = serverList.map(s => ({
-    id: s.id,
+    id: s._id,
     title: s.title,
     part: s.part,
     semester: s.semester,
@@ -148,14 +146,13 @@ async function confirmSemester() {
     } else {
        try {
             const remote = await API.createSemester(semesterObj);
-            semesterObj.id = remote.id;
+            semesterObj.id = remote._id;
         } catch (e) {
             console.warn('Could not create semester on server – keeping local only', err);
         }
         realSemesters.push(semesterObj);
         renderSemesterCard(semesterObj, false);
     }
-    closeSemesterForm();
 }
 
 function renderSemesterCard(semester, isProjection) {
@@ -213,17 +210,41 @@ function getStrengthLevel(gpa) {
     return 'weak';
 }
 
-function deleteSemester(id, isProjection) {
-    if (isProjection) {
-        projectionSemesters = projectionSemesters.filter(s => s.id !== id);
-        document.querySelector(`.projection-card[data-id="${id}"]`)?.remove();
-    } else {
-        
-        realSemesters = realSemesters.filter(s => s.id !== id);
-        document.querySelector(`.semester-card[data-id="${id}"]`)?.remove();
-        API.deleteSemester(id).catch(err => console.warn('delete failed', err));
+async function deleteSemester(id, isProjection = false) {
+    const list = isProjection ? projectionSemesters : realSemesters;
+    const selector = isProjection ? '.projection-card' : '.semester-card';
+    const card = document.querySelector(`${selector}[data-id="${id}"]`);
+
+    if (!confirm('Delete this semester permanently?')) return;
+
+    try {
+        // 🧾 2️⃣ Attempt remote deletion (only for real semesters)
+        if (!isProjection) {
+            console.log(`🛰️ Sending delete request to server for id: ${id}`);
+            const res = await fetch(`https://gradeboard-api-production.up.railway.app/api/semesters/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('gradeboard_token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!res.ok) throw new Error(`Server responded ${res.status}`);
+        }
+
+        // ✅ 3️⃣ Delete locally (only if server success OR projection)
+        const newList = list.filter(s => s.id !== id);
+        if (isProjection) projectionSemesters = newList;
+        else realSemesters = newList;
+
+        card?.remove();
         updateDashboardTotals();
         updateProjectionSemesters();
+
+        console.log(`✅ Semester ${id} deleted successfully`);
+    } catch (err) {
+        console.error('❌ Delete failed:', err);
+        alert('Failed to delete semester. Check connection or ID mapping.');
     }
 }
 
@@ -282,50 +303,63 @@ function addCourseRowToDOM(container, course, index) {
 }
 
 async function calculateSemesterGPA() {
-    if (!currentSemesterInPopup) return;
-    
-    const courses = getCoursesFromDOM();
-    let totalUnits = 0;
-    let totalPoints = 0;
-    
-    courses.forEach(course => {
-        if (course.courseCode && course.units && course.grade) {
-            const units = parseFloat(course.units);
-            const points = units * gradePoints[course.grade];
-            totalUnits += units;
-            totalPoints += points;
-        }
-    });
-    
-    const gpa = totalUnits > 0 ? totalPoints / totalUnits : 0;
-    
-    currentSemesterInPopup.courses = courses;
-    currentSemesterInPopup.totalUnits = totalUnits;
-    currentSemesterInPopup.totalPoints = totalPoints;
-    currentSemesterInPopup.gpa = gpa;
-    
-    document.getElementById('calcResult').innerHTML = `
-        GPA: ${gpa.toFixed(2)} | Units: ${totalUnits} | Points: ${totalPoints.toFixed(1)}
-    `;
-    
-    updateSemesterCard(currentSemesterInPopup, isProjectionPopup);
-    // push changes to backend (fire-and-forget)
-    if (!isProjectionPopup) {                       // real semester only
-        await API.updateSemester(currentSemesterInPopup.id, {
-            courses: currentSemesterInPopup.courses,
-            totalUnits: currentSemesterInPopup.totalUnits,
-            totalPoints: currentSemesterInPopup.totalPoints,
-            gpa: currentSemesterInPopup.gpa
-        }).catch(err => console.warn('Sync failed – keeping local copy', err));
-    }
+  if (!currentSemesterInPopup) return;
 
-    if (!isProjectionPopup) {
-        updateDashboardTotals();
-        updateProjectionSemesters();
-    } else {
-        updateProjectionCard(currentSemesterInPopup);
+  const courses = getCoursesFromDOM();
+  let totalUnits = 0, totalPoints = 0;
+
+  courses.forEach(c => {
+    if (c.courseCode && c.units && c.grade) {
+      const units = Number(c.units);
+      totalUnits += units;
+      totalPoints += units * gradePoints[c.grade];
     }
+  });
+  const gpa = totalUnits ? totalPoints / totalUnits : 0;
+
+  // 1.  update local copy immediately
+  currentSemesterInPopup.courses       = courses;
+  currentSemesterInPopup.totalUnits    = totalUnits;
+  currentSemesterInPopup.totalPoints   = totalPoints;
+  currentSemesterInPopup.gpa           = gpa;
+
+  // 2.  show result in popup
+  document.getElementById('calcResult').innerHTML =
+    `GPA: ${gpa.toFixed(2)} | Units: ${totalUnits} | Points: ${totalPoints.toFixed(1)}`;
+
+  // 3.  refresh card
+  updateSemesterCard(currentSemesterInPopup, isProjectionPopup);
+
+  // 4.  =====  RAW FETCH – no API helper  =====
+  if (!isProjectionPopup) {               // real semesters only
+    const token = localStorage.getItem('gradeboard_token');
+    fetch(`https://gradeboard-api-production.up.railway.app/api/semesters/${currentSemesterInPopup.id}`, {
+      method : 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      },
+      body: JSON.stringify({
+        courses,
+        totalUnits,
+        totalPoints,
+        gpa
+      })
+    })
+    .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
+    .then(data => console.log('✅ synced', data))
+    .catch(err => console.warn('❌ sync failed', err));
+  }
+
+  // 5.  update dashboard totals
+  if (!isProjectionPopup) {
+    updateDashboardTotals();
+    updateProjectionSemesters();
+  } else {
+    updateProjectionCard(currentSemesterInPopup);
+  }
 }
+
 
 function getCoursesFromDOM() {
     const rows = document.getElementById('courseList').querySelectorAll('.course-row');

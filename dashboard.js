@@ -1,5 +1,3 @@
-import { API } from './api.js';
-
 (async () => {
   // 1. guard route
  const token = localStorage.getItem('gradeboard_token');
@@ -29,5 +27,4 @@ import { API } from './api.js';
     window.importSemestersFromServer([]);
   }
 
-  // 4. render dashboard
 })();
