@@ -1,6 +1,7 @@
 /*========= API GATEWAY – api.js =========*/
 const API = {
-  baseURL: 'https://gradeboard-api-production.up.railway.app/api',
+  baseURL: 'https://gradeboard-api.onrender.com/api',
+  basURL: 'https://gradeboard-api-production.up.railway.app/api',
 
   /*---------- helpers ----------*/
 async _fetch(path, options = {}) {
