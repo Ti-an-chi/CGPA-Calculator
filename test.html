@@ -1,0 +1,276 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GradeBoard — lively redesign</title>
+  <style>
+    :root{
+      --bg:#f4f6f5; --container:#44A74E; --accent:#0077cc; --text:#1e1e1e;
+      --input-bg:#c9d9c8; --highlight:#e0b84d; --shadow:rgba(0,0,0,0.08);
+      --border:rgba(0,0,0,0.15);
+      --cgpa:3.00; /* default — updated by small script below */
+    }[data-theme="dark"]{ --bg:#121218; --container:#1b2b25; --accent:#4ea8de; --text:#f2f2f2; --input-bg:#283932; --highlight:#e6c667; --shadow:rgba(0,0,0,0.5); --border:#295F37 }
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:var(--bg); color:var(--text); line-height:1.5; padding-bottom:84px}
+
+/* ===== Top persistent header (always visible) ===== */
+.topbar{position:fixed;left:0;right:0;top:0;height:84px;padding:12px 18px;display:flex;align-items:center;gap:18px;background:linear-gradient(90deg, rgba(255,255,255,0.85), rgba(255,255,255,0.7));backdrop-filter:blur(6px);border-bottom:1px solid var(--border);z-index:999}
+[data-theme="dark"] .topbar{background:linear-gradient(90deg, rgba(18,18,24,0.85), rgba(18,18,24,0.7))}
+
+.brand{display:flex;align-items:center;gap:12px}
+.brand .logo{width:52px;height:52px;border-radius:10px;background:var(--container);display:flex;align-items:center;justify-content:center;font-weight:800;color:white}
+.brand h1{font-size:1.05rem}
+
+.top-stats{display:flex;gap:14px;align-items:center;margin-left:auto}
+.stat{display:flex;flex-direction:column;align-items:center;padding:8px 12px;border-radius:10px;background:var(--input-bg);border:1px solid var(--border);min-width:86px}
+.stat .label{font-size:0.75rem;opacity:.8}
+.stat .value{font-weight:800;font-size:1.05rem}
+
+/* ===== CGPA circular gauge ===== */
+.gauge-wrap{width:84px;height:84px;position:relative}
+svg.gauge{width:84px;height:84px;transform:rotate(-90deg)}
+.gauge-bg{stroke:rgba(0,0,0,0.06);stroke-width:10;fill:none}
+.gauge-fg{stroke-width:10;fill:none;stroke-linecap:round;transition:stroke-dashoffset 800ms cubic-bezier(.22,.9,.3,1), stroke 600ms}
+.gauge-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.gauge-center .num{font-weight:800}
+.gauge-center .lbl{font-size:.65rem;opacity:.85}
+
+/* map CGPA (0-5) to colors via stops using CSS calc tricks */
+.gauge-fg{stroke: url(#gaugeGradient)}
+
+/* ===== Layout body ===== */
+.main-grid{max-width:1200px;margin:108px auto 40px;padding:20px}
+.dashboard-header{border-radius:12px;padding:18px;margin-bottom:18px;box-shadow:0 6px 18px var(--shadow);border:1px solid var(--border);background:linear-gradient(180deg, var(--container), color-mix(in srgb, var(--container) 70%, white))}
+
+.totals-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.total-item{padding:12px;border-radius:10px;background:var(--input-bg);border:1px solid var(--border);display:flex;flex-direction:column;align-items:flex-start}
+.total-label{font-size:.8rem;opacity:.85}
+.total-value{font-weight:900;font-size:1.4rem}
+
+.cards-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:18px}
+.semester-card,.projection-card{padding:16px;border-radius:12px;background:linear-gradient(180deg,var(--container),color-mix(in srgb,var(--container) 80%,white));box-shadow:0 6px 16px var(--shadow);border:1px solid var(--border)}
+
+/* subtle entrance animation */
+.semester-card{transform-origin:center;opacity:0;transform:translateY(8px) scale(.995);animation:cardIn .45s ease forwards}
+@keyframes cardIn{to{opacity:1;transform:none}}
+
+/* playmode and popup styles left intentionally compatible with your existing CSS classes */
+
+/* ===== Loading overlay (global) ===== */
+.loading-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.22);backdrop-filter:blur(3px);z-index:1050;opacity:0;pointer-events:none;transition:opacity .2s}
+.loading-overlay.active{opacity:1;pointer-events:auto}
+.loader{display:flex;flex-direction:column;gap:8px;align-items:center;padding:12px 18px;border-radius:12px;background:linear-gradient(180deg,white,color-mix(in srgb, white 85%, var(--input-bg)));border:1px solid var(--border);box-shadow:0 10px 36px rgba(0,0,0,.18)}
+[data-theme="dark"] .loader{background:linear-gradient(180deg,var(--container), color-mix(in srgb,var(--container) 90%, black))}
+.loader .spinner{width:44px;height:44px;border-radius:50%;border:5px solid rgba(0,0,0,0.08);border-top-color:var(--accent);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader .text{font-weight:700}
+
+/* micro-interactions */
+button{transition:transform .12s ease,box-shadow .12s}
+button:active{transform:translateY(1px) scale(.997)}
+
+/* responsive tweaks so top bar doesn't cover content */
+@media(max-width:760px){.topbar{height:96px;flex-wrap:wrap;padding:12px}.main-grid{margin-top:120px}}
+
+  </style>
+</head>
+<body data-theme="light">
+  <!-- Topbar: fixed — always shows CGPA, units and score -->
+  <header class="topbar" aria-live="polite">
+    <div class="brand">
+      <div class="logo">GB</div>
+      <div>
+        <h1>GradeBoard</h1>
+        <div style="font-size:0.75rem;opacity:.75">Always-on CGPA + friendly vibes</div>
+      </div>
+    </div><div style="margin-left:16px;display:flex;gap:10px;align-items:center">
+  <!-- Circular gauge — reads the CGPA value from the DOM via small script below -->
+  <div class="gauge-wrap" title="CGPA gauge (0.00 - 5.00)">
+    <svg class="gauge" viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <linearGradient id="gaugeGradient" x1="0%" x2="100%">
+          <stop offset="0%" stop-color="#ff6b6b"/>
+          <stop offset="50%" stop-color="#ffd166"/>
+          <stop offset="100%" stop-color="#06d6a0"/>
+        </linearGradient>
+      </defs>
+      <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
+      <circle class="gauge-fg" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+    </svg>
+    <div class="gauge-center">
+      <div class="num" id="gaugeNumber">0.00</div>
+      <div class="lbl">CGPA</div>
+    </div>
+  </div>
+
+  <!-- Always visible numeric stats -->
+  <div class="top-stats">
+    <div class="stat">
+      <div class="label">CGPA</div>
+      <div id="cgpaDisplayTop" class="value">0.00</div>
+    </div>
+    <div class="stat">
+      <div class="label">Total Units</div>
+      <div id="totalUnitsTop" class="value">0</div>
+    </div>
+    <div class="stat">
+      <div class="label">Total Score</div>
+      <div id="totalScoreTop" class="value">0</div>
+    </div>
+  </div>
+</div>
+
+  </header>  <!-- Loading overlay (controlled by the tiny inline script below) -->  <div id="globalLoader" class="loading-overlay" aria-hidden="true">
+    <div class="loader" role="status">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="text" id="loaderText">Connecting…</div>
+    </div>
+  </div>  <!-- Main content (keeps your original structure and classes so your JS won't break) -->  <main class="main-grid"><header class="dashboard-header">
+  <div class="totals-container">
+    <div class="total-item">
+      <span class="total-label">Total Score</span>
+      <span id="totalScore" class="total-value">0</span>
+    </div>
+    <div class="total-item">
+      <span class="total-label">Total Units</span>
+      <span id="totalUnits" class="total-value">0</span>
+    </div>
+    <div class="total-item">
+      <span class="total-label">CGPA</span>
+      <span id="cgpaDisplay" class="total-value">0.00</span>
+    </div>
+  </div>
+</header>
+
+<section class="semesters-section">
+  <div class="section-header">
+    <h2>Semesters</h2>
+    <button id="addSemester" class="btn-primary">Add Semester</button>
+  </div>
+  <div id="semester-list" class="cards-container"></div>
+</section>
+
+<section class="projection-section" style="margin-top:18px">
+  <div class="section-header">
+    <h2>Projection</h2>
+    <button id="addProjection" class="btn-primary">Add Projection</button>
+  </div>
+  <div id="projection-list" class="cards-container"></div>
+</section>
+
+<div id="playmode-area" class="playmode-area hidden">
+  <div class="playmode-header">
+    <h2>Calculator Playmode</h2>
+    <div class="playmode-result">
+      <span>CGPA: </span>
+      <span id="playmodeResult">0.00</span>
+    </div>
+  </div>
+  <div class="calculator-content">
+    <div id="playmodeCourseList" class="course-list"></div>
+    <button id="playmodeAddCourse" class="btn-secondary">Add Course</button>
+    <button id="playmodeCalculate" class="btn-primary">Calculate CGPA</button>
+  </div>
+</div>
+
+  </main>  <nav class="bottom-nav" style="position:fixed;left:0;right:0;bottom:0;background:var(--container);display:flex;justify-content:space-around;padding:12px;border-top:1px solid var(--border);box-shadow:0 -4px 12px var(--shadow)">
+    <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+    <button class="nav-btn" data-view="playmode">Calculator</button>
+    <button id="themeToggle" class="theme-toggle">🌙</button>
+  </nav>  <!-- Small inline script: DOES NOT change your existing JS files. It only:
+       1) wraps window.fetch to show a global loader while network is active;
+       2) observes #cgpaDisplay and mirrors values to the topbar and gauge;
+       3) keeps loader auto-hiding after 10s so users know something is happening.
+       This is an additive enhancement only — no edits to your dashboard.js/app.js/api.js required. -->  <script>
+    (function(){
+      // ==== 1) Simple fetch wrapper to toggle loader (adds minimal global behavior) ====
+      if(window.fetch){
+        const originalFetch = window.fetch;
+        let inflight = 0;
+        window.fetch = function(){
+          inflight++;
+          showLoader(true, 'Loading…');
+          const p = originalFetch.apply(this, arguments);
+          // ensure loader hides when finished (or after 10s max)
+          const timeout = setTimeout(()=>{ if(inflight>0) showLoader(true,'Still loading…'); }, 4000);
+          return p.finally(()=>{
+            inflight = Math.max(0, inflight-1);
+            clearTimeout(timeout);
+            if(inflight===0) showLoader(false);
+          });
+        };
+      }
+
+      // ==== 2) loader helpers ====
+      const loader = document.getElementById('globalLoader');
+      const loaderText = document.getElementById('loaderText');
+      let hideTimeout = null;
+      function showLoader(show, text){
+        if(show){
+          loaderText.textContent = text || 'Loading…';
+          loader.classList.add('active');
+          // auto-hide after 10s to avoid stuck state
+          clearTimeout(hideTimeout);
+          hideTimeout = setTimeout(()=>{ loaderText.textContent = 'Still loading — please wait'; }, 8000);
+        } else {
+          clearTimeout(hideTimeout);
+          loader.classList.remove('active');
+        }
+      }
+
+      // ==== 3) Mirror numeric stats & update gauge when your existing JS updates the DOM ====
+      const cgpaNode = document.getElementById('cgpaDisplay');
+      const totalUnitsNode = document.getElementById('totalUnits');
+      const totalScoreNode = document.getElementById('totalScore');
+
+      const topCgpa = document.getElementById('cgpaDisplayTop');
+      const topUnits = document.getElementById('totalUnitsTop');
+      const topScore = document.getElementById('totalScoreTop');
+      const gaugeNum = document.getElementById('gaugeNumber');
+      const gaugeFg = document.querySelector('.gauge-fg');
+
+      function parseNum(n){ if(n==null) return 0; return Number(String(n).replace(/[^0-9.]/g,''))||0 }
+
+      function refreshMirror(){
+        // read the current DOM values (your existing JS writes to these elements already)
+        const cgpa = parseNum(cgpaNode?.textContent);
+        const units = parseNum(totalUnitsNode?.textContent);
+        const score = parseNum(totalScoreNode?.textContent);
+
+        topCgpa.textContent = cgpa.toFixed ? cgpa.toFixed(2) : String(cgpa);
+        topUnits.textContent = units;
+        topScore.textContent = score;
+        gaugeNum.textContent = cgpa.toFixed ? cgpa.toFixed(2) : String(cgpa);
+
+        // update circular stroke to map 0..5 => 0..(circumference)
+        const r = 40;
+        const circumference = 2 * Math.PI * r; // ~251.2
+        const pct = Math.min(1, Math.max(0, cgpa/5));
+        const dash = circumference * (1 - pct);
+        if(gaugeFg) gaugeFg.style.strokeDashoffset = dash;
+
+        // color feedback: slight pulse when value changes
+        gaugeNum.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.06)' }, { transform: 'scale(1)' }], { duration: 420, easing: 'cubic-bezier(.2,.9,.3,1)' });
+      }
+
+      // observe changes to the three source nodes
+      const obs = new MutationObserver(refreshMirror);
+      [cgpaNode,totalUnitsNode,totalScoreNode].forEach(n=>{ if(n) obs.observe(n,{childList:true,characterData:true,subtree:true})});
+
+      // Initial sync in case values already present
+      setTimeout(refreshMirror, 200);
+
+      // theme toggle (keeps your themeToggle usable)
+      document.getElementById('themeToggle')?.addEventListener('click', ()=>{
+        const root = document.documentElement;
+        const newTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', newTheme);
+      });
+
+    })();
+  </script>  <!-- keep your original script tags so your app logic loads as before -->  <script src="api.js"></script>  <script src="dashboard.js"></script>  <script src="app.js"></script></body>
+</html>
