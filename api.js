@@ -66,6 +66,12 @@ register(username, password) {
 
 deleteSemester(id) {
   return this._fetch(`/semesters/${id}`, { method: 'DELETE' });
+},
+
+pingApi() {
+  return this._fetch('/ping', {
+    method: 'GET'
+  }) 
 }
 };
 window.API = API;

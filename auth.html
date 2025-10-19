@@ -154,6 +154,23 @@
       color: var(--accent);
       text-decoration: none;
     }
+    
+    /* Minimal spinner */
+.mini-spinner{
+  --s: 30px;
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  border: calc(var(--s) / 7) solid rgba(0,0,0,0.08);
+  border-top-color: #0ea5e9; /* accent color — change this */
+  animation: mini-spin 900ms linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.mini-spinner.hidden{ display: none !important; }
+
+@keyframes mini-spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body data-theme="dark">
@@ -258,6 +275,7 @@ async function handleAuth() {
 
   /* ----------  SIGN-IN FLOW  ---------- */
   try {
+    document.getElementById('msg').innerHTML = `<span class="mini-spinner" role="status" aria-label="Loading"></span>`
     const data = await API.login(username, password);
     localStorage.setItem('gradeboard_token', data.token);
     if (data.refresh) localStorage.setItem('gradeboard_refresh', data.refresh);
@@ -290,6 +308,10 @@ window.onload = function () {
 window.toggleTheme = toggleTheme;
 window.toggleMode  = toggleMode;
 window.handleAuth  = handleAuth;
+    document.addEventListener('DOMContentLoaded', () => {
+      API.pingApi();
+    });
+
   </script>
 </body>
 </html>

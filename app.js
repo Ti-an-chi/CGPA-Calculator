@@ -518,7 +518,7 @@ function calculatePlaymodeGPA() {
 }
 
 function loadPlaymodeData() {
-    const saved = localStorage.getItem('playmode_data');
+    const saved = localStorage.getItem('gradeboard_courses');
     if (!saved) {
         addPlaymodeCourse();
         return;
@@ -553,7 +553,7 @@ function savePlaymodeData() {
         courses.push({ name, unit, grade });
     });
     
-    localStorage.setItem('playmode_data', JSON.stringify(courses));
+    localStorage.setItem('gradeboard_courses', JSON.stringify(courses));
 }
 
 /* ======== POLISH PATCH ======== */
