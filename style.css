@@ -183,7 +183,6 @@ body {
     border-top: 1px solid var(--border);
     box-shadow: 0 -4px 12px var(--shadow);
 }
-
 .nav-btn, .theme-toggle {
     padding: 12px 24px;
     border: none;
@@ -194,7 +193,6 @@ body {
     font-weight: 600;
     transition: all 0.2s ease;
 }
-
 .nav-btn.active {
     background: var(--accent);
     color: white;
@@ -218,18 +216,14 @@ body {
     align-items: center;
     z-index: 1000;
 }
-
-
 .form-group {
     margin-bottom: 16px;
 }
-
 .form-group label {
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
 }
-
 .form-group select {
     width: 100%;
     padding: 10px;
@@ -238,24 +232,15 @@ body {
     background: var(--input-bg);
     color: var(--text);
 }
-
 .form-buttons, .popup-buttons {
     display: flex;
     gap: 12px;
     margin-top: 20px;
-}
+} .form-buttons button, .popup-buttons button { flex: 1; }
 
-.form-buttons button, .popup-buttons button {
-    flex: 1;
-}
+.course-list { margin-bottom: 20px; }
 
-.course-list {
-    margin-bottom: 20px;
-}
-
-.hidden {
-    display: none !important;
-}
+.hidden { display: none !important; }
 
 @media (max-width: 768px) {
     .main-grid {
@@ -298,7 +283,6 @@ body {
         font-size: 0.9em;
     }
 }
-
 @media (max-width: 480px) {
     .card-stats {
         grid-template-columns: 1fr;
@@ -313,7 +297,6 @@ body {
         grid-template-columns: 1fr;
     }
 }
-    
     
     /* === CGPA Circle Tracker === */
 .cgpa-circle-wrapper {
@@ -396,7 +379,6 @@ body {
   box-shadow: 0 4px 10px var(--shadow);
   max-width: 700px;
   margin: auto;
-  width: 90%;
   max-height: 80vh;
   overflow: auto;
 }
@@ -479,6 +461,13 @@ body {
 #addCourseBtn:hover, #calcGpaBtn:hover,
 #playmodeAddCourse:hover, #playmodeCalculate:hover {
   opacity: .9;
+}
+.close-btn {
+    width: 30px;
+    height: auto;
+    border-radius: 15%;
+    font-size: 16px;
+    padding: 0;
 }
 
 /* delete course row button */
