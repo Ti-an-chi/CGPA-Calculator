@@ -73,7 +73,7 @@ function setupEventListeners() {
     document.getElementById('addProjection').addEventListener('click', () => openSemesterForm(true));
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
     
-    document.getElementById('confirmSemester').addEventListener('click', confirmSemester);
+    //document.getElementById('confirmSemester').addEventListener('click', confirmSemester);
     document.getElementById('cancelSemester').addEventListener('click', closeSemesterForm);
     
     document.getElementById('addCourseBtn').addEventListener('click', addCourseRow);
@@ -523,7 +523,7 @@ const originalCalc = calculateSemesterGPA;
 calculateSemesterGPA = async function () {
   const courses = getCoursesFromDOM();
   if (courses.length === 0) {
-    toast('Add at least one course before calculating.');
+    toast('mumu! add one course before calculating.');
     return;
   }
   await originalCalc.call(this);
@@ -563,7 +563,7 @@ function toast(msg) {
   setTimeout(() => t.style.opacity = 0, 3000);
 }
 
-/* 4. Clear projection list on load to avoid ghost cards */
+
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('projection-list').innerHTML = '';
   projectionSemesters = [];
