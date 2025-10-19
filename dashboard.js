@@ -26,5 +26,7 @@
     console.warn('Server unreachable – using fallback', e);
     window.importSemestersFromServer([]);
   }
-
+    if (realSemesters.length === 0) {
+        createDefaultSemester();
+    }
 })();

@@ -8,7 +8,6 @@ let isProjectionPopup = false;
 
 /*========SERVER → CLIENT BRIDGE========*/
 window.importSemestersFromServer = function (serverList) {
-  // convert server shape into app.js shape
   realSemesters = serverList.map(s => ({
     id: s._id,
     title: s.title,
@@ -20,7 +19,6 @@ window.importSemestersFromServer = function (serverList) {
     gpa: s.gpa || 0
   }));
 
-  // render cards & totals (happens before dashboard becomes visible)
   realSemesters.forEach(sem => renderSemesterCard(sem, false));
   updateDashboardTotals();
   updateProjectionSemesters();
@@ -28,7 +26,6 @@ window.importSemestersFromServer = function (serverList) {
 
 function init() {
     loadTheme();
-    createDefaultSemester();
     updateDashboardTotals();
     setupEventListeners();
     loadPlaymodeData();
@@ -46,7 +43,7 @@ function updateThemeToggle(theme) {
     toggle.textContent = theme === 'dark' ? '☀️' : '🌙';
 }
 
-function createDefaultSemester() {
+window.createDefaultSemester = async function () {
     const defaultSemester = {
         id: generateId(),
         title: 'Part 1 | HAMATERN',
@@ -57,6 +54,12 @@ function createDefaultSemester() {
         totalPoints: 0,
         gpa: 0
     };
+    try {
+        const remote = await API.createSemester(defaultSemester)
+        defaultSemester.id = remote._id;
+    } catch (e) {
+        console.warn('could not create semester on server – keeping local copy')
+    }
     realSemesters.push(defaultSemester);
     renderSemesterCard(defaultSemester, false);
 }
@@ -211,41 +214,31 @@ function getStrengthLevel(gpa) {
 }
 
 async function deleteSemester(id, isProjection = false) {
-    const list = isProjection ? projectionSemesters : realSemesters;
-    const selector = isProjection ? '.projection-card' : '.semester-card';
-    const card = document.querySelector(`${selector}[data-id="${id}"]`);
+  const list = isProjection ? projectionSemesters : realSemesters;
+  const selector = isProjection ? '.projection-card' : '.semester-card';
+  const card = document.querySelector(`${selector}[data-id="${id}"]`);
 
-    if (!confirm('Delete this semester permanently?')) return;
+  if (!confirm('Delete this semester permanently?')) return;
 
-    try {
-        // 🧾 2️⃣ Attempt remote deletion (only for real semesters)
-        if (!isProjection) {
-            console.log(`🛰️ Sending delete request to server for id: ${id}`);
-            const res = await fetch(`https://gradeboard-api-production.up.railway.app/api/semesters/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('gradeboard_token')}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!res.ok) throw new Error(`Server responded ${res.status}`);
-        }
-
-        // ✅ 3️⃣ Delete locally (only if server success OR projection)
-        const newList = list.filter(s => s.id !== id);
-        if (isProjection) projectionSemesters = newList;
-        else realSemesters = newList;
-
-        card?.remove();
-        updateDashboardTotals();
-        updateProjectionSemesters();
-
-        console.log(`✅ Semester ${id} deleted successfully`);
-    } catch (err) {
-        console.error('❌ Delete failed:', err);
-        alert('Failed to delete semester. Check connection or ID mapping.');
+  try {
+    if (!isProjection) {
+      console.log(`🛰️ Deleting semester on server: ${id}`);
+      await API.deleteSemester(id);
     }
+
+    const newList = list.filter(s => s.id !== id);
+    if (isProjection) projectionSemesters = newList;
+    else realSemesters = newList;
+
+    card?.remove();
+    updateDashboardTotals();
+    updateProjectionSemesters();
+
+    console.log(`✅ Semester ${id} deleted successfully`);
+  } catch (err) {
+    console.error('❌ Delete failed:', err);
+    alert(err.message || 'Failed to delete semester. Check connection.');
+  }
 }
 
 function openCalculator(semester, isProjection) {
@@ -286,7 +279,7 @@ function addCourseRowToDOM(container, course, index) {
     
     row.innerHTML = `
         <input type="text" placeholder="Course name" value="${course.courseCode}" class="course-name">
-        <input type="number" placeholder="Units" min="1" max="10" value="${course.unit}" class="course-unit">
+        <input type="number" placeholder="Units" min="1" max="10" value="${course.units}" class="course-unit">
         <select class="course-grade">
             ${Object.keys(gradePoints).map(grade => 
                 `<option value="${grade}" ${grade === course.grade ? 'selected' : ''}>${grade}</option>`
@@ -315,43 +308,28 @@ async function calculateSemesterGPA() {
       totalPoints += units * gradePoints[c.grade];
     }
   });
+
   const gpa = totalUnits ? totalPoints / totalUnits : 0;
 
-  // 1.  update local copy immediately
-  currentSemesterInPopup.courses       = courses;
-  currentSemesterInPopup.totalUnits    = totalUnits;
-  currentSemesterInPopup.totalPoints   = totalPoints;
-  currentSemesterInPopup.gpa           = gpa;
+  Object.assign(currentSemesterInPopup, { courses, totalUnits, totalPoints, gpa });
 
-  // 2.  show result in popup
   document.getElementById('calcResult').innerHTML =
     `GPA: ${gpa.toFixed(2)} | Units: ${totalUnits} | Points: ${totalPoints.toFixed(1)}`;
 
-  // 3.  refresh card
   updateSemesterCard(currentSemesterInPopup, isProjectionPopup);
-
-  // 4.  =====  RAW FETCH – no API helper  =====
-  if (!isProjectionPopup) {               // real semesters only
-    const token = localStorage.getItem('gradeboard_token');
-    fetch(`https://gradeboard-api-production.up.railway.app/api/semesters/${currentSemesterInPopup.id}`, {
-      method : 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` })
-      },
-      body: JSON.stringify({
+  if (!isProjectionPopup) {
+    try {
+      await API.updateSemester(currentSemesterInPopup.id, {
         courses,
         totalUnits,
         totalPoints,
         gpa
-      })
-    })
-    .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
-    .then(data => console.log('✅ synced', data))
-    .catch(err => console.warn('❌ sync failed', err));
+      });
+      console.log('✅ Semester synced with server');
+    } catch (err) {
+      console.warn('❌ Sync failed:', err);
+    }
   }
-
-  // 5.  update dashboard totals
   if (!isProjectionPopup) {
     updateDashboardTotals();
     updateProjectionSemesters();
@@ -359,7 +337,6 @@ async function calculateSemesterGPA() {
     updateProjectionCard(currentSemesterInPopup);
   }
 }
-
 
 function getCoursesFromDOM() {
     const rows = document.getElementById('courseList').querySelectorAll('.course-row');
@@ -539,4 +516,56 @@ function savePlaymodeData() {
     localStorage.setItem('playmode_data', JSON.stringify(courses));
 }
 
+/* ======== POLISH PATCH ======== */
+
+/* 1. Guard empty calculator */
+const originalCalc = calculateSemesterGPA;
+calculateSemesterGPA = async function () {
+  const courses = getCoursesFromDOM();
+  if (courses.length === 0) {
+    toast('Add at least one course before calculating.');
+    return;
+  }
+  await originalCalc.call(this);
+};
+
+/* 2. Disable “Add Semester” while submitting */
+document.getElementById('confirmSemester').addEventListener('click', async (e) => {
+  const btn = e.target;
+  if (btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = 'Creating…';
+  try {
+    await confirmSemester();
+    closeSemesterForm();
+  } catch (err) {
+    toast(err.message || 'Could not create semester');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Add Semester';
+  }
+});
+
+/* 3. Tiny toast helper */
+function toast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = `
+      position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+      background:var(--accent); color:#fff; padding:8px 16px; border-radius:6px;
+      font-size:0.9rem; z-index:2000; transition:opacity .3s;`;
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = 1;
+  setTimeout(() => t.style.opacity = 0, 3000);
+}
+
+/* 4. Clear projection list on load to avoid ghost cards */
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('projection-list').innerHTML = '';
+  projectionSemesters = [];
+});
 document.addEventListener('DOMContentLoaded', init);
