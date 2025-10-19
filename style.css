@@ -1,0 +1,508 @@
+
+:root {
+    --bg: #f4f6f5;
+    --container: #44A74E;
+    --accent: #0077cc;
+    --text: #1e1e1e;
+    --input-bg: #c9d9c8;
+    --highlight: #e0b84d;
+    --shadow: rgba(0, 0, 0, 0.08);
+    --border: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] {
+    --bg: #121218;
+    --container: #1b2b25;
+    --accent: #4ea8de;
+    --text: #f2f2f2;
+    --input-bg: #283932;
+    --highlight: #e6c667;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --border: #295F37;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding-bottom: 70px;
+}
+
+.main-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.dashboard-header {
+    background: var(--container);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px var(--shadow);
+    border: 1px solid var(--border);
+}
+.totals-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+}
+.total-item {
+    text-align: center;
+    padding: 16px;
+    background: var(--input-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+.total-label {
+    display: block;
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin-bottom: 8px;
+}
+.total-value {
+    display: block;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-header h2 {
+    color: var(--text);
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.semester-card, .projection-card {
+    background: var(--container);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px var(--shadow);
+    border: 1px solid var(--border);
+}
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.card-title {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+.card-actions {
+    display: flex;
+    gap: 8px;
+}
+.card-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 8px;
+    background: var(--input-bg);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+.stat-label {
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+.stat-value {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.strength-meter {
+    text-align: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: bold;
+    margin-top: 8px;
+}
+.strength-weak { background: #ff6b6b; color: white; }
+.strength-average { background: #ffd166; color: black; }
+.strength-strong { background: #06d6a0; color: white; }
+.strength-beast { background: #118ab2; color: white; }
+
+.btn-primary, .btn-secondary {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+.btn-primary {
+    background: var(--accent);
+    color: white;
+}
+.btn-secondary {
+    background: var(--input-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+.btn-primary:hover, .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--container);
+    display: flex;
+    justify-content: space-around;
+    padding: 12px;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 12px var(--shadow);
+}
+
+.nav-btn, .theme-toggle {
+    padding: 12px 24px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.nav-btn.active {
+    background: var(--accent);
+    color: white;
+}
+
+.theme-toggle {
+    font-size: 1.2em;
+    padding: 8px 16px;
+}
+
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+}
+
+.form-buttons, .popup-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.form-buttons button, .popup-buttons button {
+    flex: 1;
+}
+
+.course-list {
+    margin-bottom: 20px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .main-grid {
+        padding: 16px;
+    }
+    
+    .totals-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .cards-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    
+    .course-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    
+    .course-row input, .course-row select {
+        width: 100%;
+    }
+    
+    .form-buttons, .popup-buttons {
+        flex-direction: column;
+    }
+    
+    .bottom-nav {
+        padding: 8px;
+    }
+    
+    .nav-btn, .theme-toggle {
+        padding: 10px 16px;
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .popup-content {
+        padding: 16px;
+        margin: 16px;
+    }
+    
+    .course-row {
+        grid-template-columns: 1fr;
+    }
+}
+    
+    
+    /* === CGPA Circle Tracker === */
+.cgpa-circle-wrapper {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px var(--shadow);
+    border: 1px solid var(--border);
+    z-index: 50;
+}
+
+.cgpa-circle {
+    transform: rotate(-90deg);
+}
+
+.cgpa-bg {
+    fill: none;
+    stroke: var(--input-bg);
+    stroke-width: 10;
+}
+
+.cgpa-progress {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 10;
+    stroke-linecap: round;
+    stroke-dasharray: 339.29; /* circumference = 2πr = 2 * π * 54 */
+    stroke-dashoffset: 339.29;
+    transition: stroke-dashoffset 1s ease;
+}
+
+.cgpa-circle-text {
+    position: absolute;
+    text-align: center;
+    color: var(--text);
+    font-weight: bold;
+}
+
+.cgpa-circle-text .cgpa-label {
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+.cgpa-circle-text #cgpaCircleValue {
+    font-size: 1.4em;
+}
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--container);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow);
+    border: 1px solid var(--border);
+}.full-width {width: 100%;}
+
+
+/* --------------  CALCULATOR SKIN  -------------- */
+/* make both pop-up and play-mode look like the mini-app */
+
+/* --- base font --- */
+.calculator-popup *,
+#playmode-area * {
+  font-family: 'Poppins', system-ui, sans-serif;
+}
+
+/* --- card shell (same as your .container) --- */
+.calculator-popup .popup-content,
+#playmode-area {
+  background: var(--container);      /* already themed */
+  border-radius: 15px;
+  padding: 16px;
+  box-shadow: 0 4px 10px var(--shadow);
+  max-width: 700px;
+  margin: auto;
+  width: 90%;
+  max-height: 80vh;
+  overflow: auto;
+}
+
+.popup-content {
+    background: var(--container);
+    box-shadow: 0 8px 32px var(--shadow);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    max-width: 700px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+
+/* --- title --- */
+.calculator-popup h3,
+#playmode-area h2 {
+  text-align: center;
+  margin-bottom: 4px;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.calculator-popup .popup-header,
+#playmode-area .playmode-header {
+  border: none;
+  padding: 0 0 8px 0;
+}
+
+/* --- course grid --- */
+#courseList,
+#playmodeCourseList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 12px;
+}
+
+/* --- inputs & selects (cloned from mini-app) --- */
+#courseList input, #playmodeCourseList input {
+  padding: 7px;
+  margin-right: 8px;
+  border: none;
+  color: var(--text);
+  border: solid 2px var(--border);
+  border-radius: 15px;
+  background: var(--input-bg);
+  font-size: 15px;
+  box-shadow: inset 1px 1px 3px var(--shadow);
+  width: 100%;
+}
+#playmodeCourseList select, #courseList select{
+  padding: 7px;
+  margin-right: 8px;
+  border: none;
+  color: var(--text);
+  border: solid 2px var(--border);
+  border-radius: 15px;
+  background: var(--input-bg);
+  font-size: 15px;
+  box-shadow: inset 1px 1px 3px var(--shadow);
+  width: 50px;
+}
+
+    /* --- buttons (cloned from mini-app) --- */
+#addCourseBtn, #calcGpaBtn,
+#playmodeAddCourse, #playmodeCalculate {
+  margin-top: 15px;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+#addCourseBtn:hover, #calcGpaBtn:hover,
+#playmodeAddCourse:hover, #playmodeCalculate:hover {
+  opacity: .9;
+}
+
+/* delete course row button */
+.remove-course {
+  background: crimson;
+  color: #fff;
+  border: none;
+  border-radius: 15px;
+  width: 40px;
+  height: 35px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* result box */
+#calcResult,
+#playmodeResult {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 15px;
+  font-size: 18px;
+  padding: 10px;
+  border-radius: 10px;
+/*/  background: var(--input-bg);*/
+  color: var(--highlight);
+}

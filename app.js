@@ -102,16 +102,30 @@ function toggleTheme() {
 function showView(view) {
     const dashboard = document.querySelector('.dashboard-main');
     const playmode = document.getElementById('playmode-area');
+    const settings = document.getElementById('settings-section');
     const navBtns = document.querySelectorAll('.nav-btn');
+    const cgpaCircle = document.getElementById('cgpaCircleContainer');
     
+    // Hide all views first
+    dashboard.classList.add('hidden');
+    playmode.classList.add('hidden');
+    settings.classList.add('hidden');
+    
+    // Show the selected one
     if (view === 'dashboard') {
         dashboard.classList.remove('hidden');
-        playmode.classList.add('hidden');
-    } else {
-        dashboard.classList.add('hidden');
+        cgpaCircle?.classList.remove('hidden'); // show CGPA tracker
+    }
+    else if (view === 'playmode') {
         playmode.classList.remove('hidden');
+        cgpaCircle?.classList.add('hidden'); // hide CGPA tracker
+    }
+    else if (view === 'settings') {
+        settings.classList.remove('hidden');
+        cgpaCircle?.classList.add('hidden'); // hide CGPA tracker
     }
     
+    // Update nav button states
     navBtns.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.view === view);
     });
@@ -174,7 +188,7 @@ function renderSemesterCard(semester, isProjection) {
             <div class="card-title">${semester.title}</div>
             <div class="card-actions">
                 <button class="btn-secondary edit-btn">Edit</button>
-                <button class="btn-secondary delete-btn">Delete</button>
+                <button class="btn-secondary delete-btn">🗑️Delete</button>
             </div>
         </div>
         <div class="card-stats">
@@ -285,7 +299,7 @@ function addCourseRowToDOM(container, course, index) {
                 `<option value="${grade}" ${grade === course.grade ? 'selected' : ''}>${grade}</option>`
             ).join('')}
         </select>
-        <button class="remove-course">&times;</button>
+        <button class="remove-course">🗑️</button>
     `;
     
     row.querySelector('.remove-course').addEventListener('click', () => {
@@ -387,10 +401,36 @@ function updateDashboardTotals() {
     });
     
     const cgpa = totalUnits > 0 ? totalPoints / totalUnits : 0;
-    
+
+    // === Existing UI updates ===
     document.getElementById('totalUnits').textContent = totalUnits;
     document.getElementById('totalScore').textContent = totalPoints.toFixed(1);
     document.getElementById('cgpaDisplay').textContent = cgpa.toFixed(2);
+
+    // === Circle animation updates ===
+    const circle = document.querySelector('.cgpa-progress');
+    const circleText = document.getElementById('cgpaCircleValue');
+    const radius = 54;
+    const circumference = 2 * Math.PI * radius;
+
+    const percent = Math.min(cgpa / 5, 1); // clamp to 100%
+    const offset = circumference * (1 - percent);
+    circle.style.strokeDashoffset = offset;
+
+    // Animate number count-up
+    animateNumber(circleText, parseFloat(circleText.textContent), cgpa, 800);
+}
+
+// Simple number animation helper
+function animateNumber(element, from, to, duration) {
+    const start = performance.now();
+    function frame(time) {
+        const progress = Math.min((time - start) / duration, 1);
+        const value = from + (to - from) * progress;
+        element.textContent = value.toFixed(2);
+        if (progress < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
 }
 
 function updateProjectionSemesters() {
@@ -440,7 +480,7 @@ function addPlaymodeCourseRow(container, course) {
                 `<option value="${grade}" ${grade === course.grade ? 'selected' : ''}>${grade}</option>`
             ).join('')}
         </select>
-        <button class="remove-course">&times;</button>
+        <button class="remove-course">🗑️</button>
     `;
     
     row.querySelector('.remove-course').addEventListener('click', () => {
@@ -567,5 +607,10 @@ function toast(msg) {
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('projection-list').innerHTML = '';
   projectionSemesters = [];
+});
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('gradeboard_token');
+    alert('Logged out successfully!');
+    location.reload();
 });
 document.addEventListener('DOMContentLoaded', init);
