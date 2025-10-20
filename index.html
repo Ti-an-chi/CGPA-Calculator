@@ -187,7 +187,7 @@
     🚀 <span>New!</span> Save semesters & track your progress.<br>
     <button onclick="redirectToSignup()">Sign up for a better experience</button>
   </div>
-
+  <script src="api.js"></script>
   <script>
         // Theme toggler
     function toggleTheme() {
@@ -208,6 +208,7 @@
     // Load saved courses from localStorage
     window.onload = function () {
       const saved = JSON.parse(localStorage.getItem("gradeboard_courses") || "[]");
+      API.pingApi();
       if (saved.length) {
         saved.forEach(addSavedCourse);
       } else {
