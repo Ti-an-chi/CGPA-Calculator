@@ -1,11 +1,11 @@
 /*========= API GATEWAY – api.js =========*/
 const API = {
-  baseURL: 'https://gradeboard-api.onrender.com/api',
+  baseURL: 'https://gradeboard-api.onrender.com',
   basURL: 'https://gradeboard-api-production.up.railway.app/api',
 
   /*---------- helpers ----------*/
 async _fetch(path, options = {}) {
-  const url = `${this.baseURL}${path}`;
+  const url = `${this.baseURL}/api${path}`;
   const token = localStorage.getItem('gradeboard_token');
 
   const defaults = {
@@ -68,10 +68,10 @@ deleteSemester(id) {
   return this._fetch(`/semesters/${id}`, { method: 'DELETE' });
 },
 
-pingApi() {
-  return this._fetch('/ping', {
-    method: 'GET'
-  }) 
-}
+  async pingApi() {
+    const pingUrl = `${this.baseURL}`;
+    const resp = await fetch(pingUrl);
+    console.log(`${resp.json}, good!`)
+  }
 };
 window.API = API;
